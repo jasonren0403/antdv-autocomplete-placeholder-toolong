@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>autocomplete 组件的样式问题</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <link
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/ant-design-vue@4.2.6/dist/reset.css"
+      media="screen"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/customParseFormat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/weekday.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/localeData.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/weekOfYear.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/weekYear.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/advancedFormat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/plugin/quarterOfYear.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ant-design-vue@4.2.6/dist/antd.min.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div style="padding: 24px">
+        <ul>
+          <li>
+            <p>
+              bug1：不在 collapse panel 的 auto-complete 组件不受过长
+              placeholder 影响（name 2）
+            </p>
+            <p>
+              此外，当使用 input-group compact 布局时，与 name1 组合的
+              auto-complete input 组件部分还是会随着 placeholder
+              变长而扩大（无法定宽），这是不合理的
+            </p>
+          </li>
+          <li>
+            bug 2: 在无法定长的 auto complete
+            组件输入文字时，光标会失焦，无法继续输入文字。
+            <ul>
+              <li>
+                无法于name1的auto-complete框中输入111（选项中有此字符串）或333（选项中无此字符串），输入一下就会跳出去
+              </li>
+              <li>name2的auto-complete框一切正常</li>
+            </ul>
+          </li>
+        </ul>
+        <a-input v-model:value="tooLongPlaceholder" />
+      </div>
+      <div style="padding: 24px">
+        <a-form>
+          <a-form-item label="name 1">
+            <a-input-group
+              compact
+              :style="{
+              display: 'flex',
+              width: '100%',
+            }"
+            >
+              <a-form-item-rest>
+                <a-select v-model:value="selectLeft" style="width: 100px">
+                  <a-select-option :value="1">option 1</a-select-option>
+                  <a-select-option :value="0">option 2</a-select-option>
+                </a-select>
+              </a-form-item-rest>
+              <a-auto-complete
+                :filter-option="commonFilter"
+                :options="mockOptions"
+                v-model:value="autoCompleteSelect"
+                :placeholder="tooLongPlaceholder"
+              />
+            </a-input-group>
+          </a-form-item>
+          <a-form-item label="name 2">
+            <a-auto-complete
+              :filter-option="commonFilter"
+              :options="mockOptions"
+              v-model:value="autoCompleteSelect"
+              :placeholder="tooLongPlaceholder"
+            />
+          </a-form-item>
+        </a-form>
+      </div>
+      <div style="padding: 24px">
+        <a-collapse v-model:activeKey="activeKey">
+          <a-collapse-panel
+            key="1"
+            header="过长 placeholder 会使得在 collapse 组件中的 auto-complete 溢出，此时无论是否使用input group compact布局，auto-complete 组件都无法固定宽度"
+          >
+            <a-auto-complete
+              :filter-option="commonFilter"
+              :options="mockOptions"
+              v-model:value="autoCompleteSelect"
+              :placeholder="tooLongPlaceholder"
+            />
+          </a-collapse-panel>
+        </a-collapse>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref } = Vue;
+
+      const commonFilter = (input, option) => {
+        return (
+          option.label.includes(input) ||
+          option.label.includes(input.toUpperCase()) ||
+          option.label.includes(input.toLowerCase())
+        );
+      };
+
+      const app = createApp({
+        setup() {
+          const activeKey = ref(["1"]);
+          const autoCompleteSelect = ref("");
+          const selectLeft = ref("");
+          const tooLongPlaceholder = ref(
+            "111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+          );
+          const mockOptions = ref([
+            { value: "1", label: "opt 1" },
+            { value: "2", label: "opt 2" },
+          ]);
+          return {
+            activeKey,
+            autoCompleteSelect,
+            commonFilter,
+            selectLeft,
+            tooLongPlaceholder,
+            mockOptions,
+          };
+        },
+      });
+
+      app.use(antd);
+      app.mount("#app");
+    </script>
+  </body>
+</html>
